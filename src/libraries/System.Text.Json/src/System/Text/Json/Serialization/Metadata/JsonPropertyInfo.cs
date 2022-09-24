@@ -339,6 +339,9 @@ namespace System.Text.Json.Serialization.Metadata
 
             JsonNumberHandlingAttribute? numberHandlingAttr = memberInfo.GetCustomAttribute<JsonNumberHandlingAttribute>(inherit: false);
             NumberHandling = numberHandlingAttr?.Handling;
+
+            JsonSerializationErrorAttribute? errorAttr = memberInfo.GetCustomAttribute<JsonSerializationErrorAttribute>(inherit: false);
+            ErrorMessage = errorAttr?.Message ?? null;
         }
 
         private void DeterminePropertyNameFromMember(MemberInfo memberInfo)
@@ -695,6 +698,29 @@ namespace System.Text.Json.Serialization.Metadata
         }
 
         private int _order;
+
+
+        /// <summary>
+        /// Gets or sets the serialization error message for the current property.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The <see cref="JsonPropertyInfo"/> instance has been locked for further modification.
+        /// </exception>
+        /// <remarks>
+        /// For contracts originating from <see cref="DefaultJsonTypeInfoResolver"/> or <see cref="JsonSerializerContext"/>,
+        /// the value of this property will be mapped from <see cref="JsonSerializationErrorAttribute"/> annotations.
+        /// </remarks>
+        public string? ErrorMessage
+        {
+            get => _errorMessage;
+            set
+            {
+                VerifyMutable();
+                _errorMessage = value;
+            }
+        }
+
+        private string? _errorMessage;
 
         internal bool ReadJsonAndAddExtensionProperty(
             object obj,

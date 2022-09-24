@@ -512,6 +512,40 @@ namespace System.Text.Json.Serialization.Tests
             Assert.DoesNotContain("Path: $", ex.Message);
         }
 
+        [JsonSerializationError("Invalid JSON! Path: {0} Line: {1} Byte position: {2}")]
+        private class CustomSerializationError
+        {
+
+            [JsonSerializationError("Invalid date! Path: {0} Line: {1} Byte position: {2}")]
+            public DateTime Date { get; set; }
+
+        }
+
+        [Fact]
+        public static void CustomJsonSerializationError()
+        {
+            string jsonString = @"{
+                ""Date"": ""Not a date""
+            }";
+            Exception ex = Assert.Throws<JsonException>(() =>
+            {
+                JsonSerializer.Deserialize<CustomSerializationError>(jsonString);
+            });
+
+            Assert.Contains("Invalid date!", ex.Message);
+
+            string invalidJsonString = @"{
+                ""Date"": ""2022-10-15""
+            ";
+
+            ex = Assert.Throws<JsonException>(() =>
+            {
+                JsonSerializer.Deserialize<CustomSerializationError>(invalidJsonString);
+            });
+
+            Assert.Contains("Invalid JSON!", ex.Message);
+        }
+
         [Theory]
         [InlineData(typeof(ClassWithBadCtor))]
         [InlineData(typeof(StructWithBadCtor))]

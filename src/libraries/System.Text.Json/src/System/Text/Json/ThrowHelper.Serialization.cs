@@ -362,6 +362,16 @@ namespace System.Text.Json
             Debug.Assert(ex.Path == null);
 
             string path = state.JsonPath();
+
+            Type propertyType = state.Current.JsonPropertyInfo?.PropertyType ?? state.Current.JsonTypeInfo.Type;
+
+            JsonSerializationErrorAttribute? errorAttribute = (JsonSerializationErrorAttribute?)Attribute.GetCustomAttribute(propertyType, typeof(JsonSerializationErrorAttribute));
+
+            if (errorAttribute != null)
+            {
+                throw new JsonException(string.Format(errorAttribute.Message, path, ex.LineNumber, ex.BytePositionInLine), path, ex.LineNumber, ex.BytePositionInLine, ex);
+            }
+
             string message = ex.Message;
 
             // Insert the "Path" portion before "LineNumber" and "BytePositionInLine".
@@ -405,10 +415,27 @@ namespace System.Text.Json
 
             string? message = ex._message;
 
-            if (string.IsNullOrEmpty(message))
+            string? customErrorMessage = state.Current.JsonPropertyInfo?.ErrorMessage;
+
+            Type propertyType = state.Current.JsonPropertyInfo?.PropertyType ?? state.Current.JsonTypeInfo.Type;
+
+            if (customErrorMessage == null)
+            {
+                JsonSerializationErrorAttribute? errorAttribute = (JsonSerializationErrorAttribute?)Attribute.GetCustomAttribute(propertyType, typeof(JsonSerializationErrorAttribute));
+                if (errorAttribute != null)
+                {
+                    customErrorMessage = errorAttribute.Message;
+                }
+            }
+
+            if (customErrorMessage != null)
+            {
+                //Use custom message
+                ex.SetMessage(string.Format(customErrorMessage, path, lineNumber, bytePositionInLine));
+            }
+            else if (string.IsNullOrEmpty(message))
             {
                 // Use a default message.
-                Type propertyType = state.Current.JsonPropertyInfo?.PropertyType ?? state.Current.JsonTypeInfo.Type;
                 message = SR.Format(SR.DeserializeUnableToConvertValue, propertyType);
                 ex.AppendPathInformation = true;
             }

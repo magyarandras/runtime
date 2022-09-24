@@ -960,6 +960,12 @@ namespace System.Text.Json.Serialization
         public System.Text.Json.Serialization.JsonSourceGenerationMode GenerationMode { get { throw null; } set { } }
         public string? TypeInfoPropertyName { get { throw null; } set { } }
     }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class |  System.AttributeTargets.Struct | System.AttributeTargets.Field | System.AttributeTargets.Property, AllowMultiple=false)]
+    public sealed partial class JsonSerializationErrorAttribute : System.Text.Json.Serialization.JsonAttribute
+    {
+        public JsonSerializationErrorAttribute(string message) { }
+        public string Message { get { throw null; } }
+    }
     public abstract partial class JsonSerializerContext : System.Text.Json.Serialization.Metadata.IJsonTypeInfoResolver
     {
         protected JsonSerializerContext(System.Text.Json.JsonSerializerOptions? options) { }
@@ -1166,6 +1172,7 @@ namespace System.Text.Json.Serialization.Metadata
         public System.Text.Json.Serialization.JsonNumberHandling? NumberHandling { get { throw null; } set { } }
         public System.Text.Json.JsonSerializerOptions Options { get { throw null; } }
         public int Order { get { throw null; } set { } }
+        public string ErrorMessage { get { throw null; } set { } }
         public System.Type PropertyType { get { throw null; } }
         public System.Action<object, object?>? Set { get { throw null; } set { } }
         public System.Func<object, object?, bool>? ShouldSerialize { get { throw null; } set { } }
