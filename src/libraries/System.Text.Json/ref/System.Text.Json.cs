@@ -148,6 +148,7 @@ namespace System.Text.Json
         public JsonException(string? message, string? path, long? lineNumber, long? bytePositionInLine) { }
         public JsonException(string? message, string? path, long? lineNumber, long? bytePositionInLine, System.Exception? innerException) { }
         public long? BytePositionInLine { get { throw null; } }
+        public bool InsertPathInformation { get { throw null; }  init { } }
         public long? LineNumber { get { throw null; } }
         public override string Message { get { throw null; } }
         public string? Path { get { throw null; } }

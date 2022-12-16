@@ -406,6 +406,10 @@ namespace System.Text.Json
                 message = SR.Format(SR.DeserializeUnableToConvertValue, propertyType);
                 ex.AppendPathInformation = true;
             }
+            else if (ex.InsertPathInformation)
+            {
+                ex.SetMessage(string.Format(message, path, lineNumber, bytePositionInLine));
+            }
 
             if (ex.AppendPathInformation)
             {

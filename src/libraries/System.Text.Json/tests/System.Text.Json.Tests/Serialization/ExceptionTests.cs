@@ -630,5 +630,47 @@ namespace System.Text.Json.Serialization.Tests
             public override void Write(Utf8JsonWriter writer, PocoUsingCustomConverterThrowingJsonException value, JsonSerializerOptions options)
                 => throw new JsonException(ExceptionMessage, ExceptionPath, 0, 0);
         }
+
+        public class CustomJsonConverterWithInsertPathInfo : JsonConverter<int>
+        {
+            public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+                => throw new JsonException("Custom error message Path: {0}, Line number: {1}, Byte position in line: {2}") { InsertPathInformation = true };
+
+            public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options) => throw new NotImplementedException();
+        }
+
+        public class PropertyUsingCustomConverterThrowingWithPathInfo
+        {
+            [JsonConverter(typeof(CustomJsonConverterWithInsertPathInfo))]
+            public int Id { get; set; }
+        }
+
+        public class CustomPocoJsonConverterWithInsertPathInfo : JsonConverter<PocoUsingCustomConverterThrowingWithPathInfo>
+        {
+            public override PocoUsingCustomConverterThrowingWithPathInfo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+                => throw new JsonException("Custom error message Path: {0}, Line number: {1}, Byte position in line: {2}") { InsertPathInformation = true };
+
+            public override void Write(Utf8JsonWriter writer, PocoUsingCustomConverterThrowingWithPathInfo value, JsonSerializerOptions options) => throw new NotImplementedException();
+        }
+
+        [JsonConverter(typeof(CustomPocoJsonConverterWithInsertPathInfo))]
+        public class PocoUsingCustomConverterThrowingWithPathInfo
+        {
+        }
+
+        [Fact]
+        public static void JsonExceptionWithInsertPathInfoForProperty()
+        {
+            JsonException ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<PropertyUsingCustomConverterThrowingWithPathInfo>(@"{ ""Id"": ""invalid_value"" }"));
+            Assert.Equal("Custom error message Path: $.Id, Line number: 0, Byte position in line: 23", ex.Message);
+        }
+
+        [Fact]
+        public static void JsonExceptionWithInsertPathInfoForPoco()
+        {
+            JsonException ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<PocoUsingCustomConverterThrowingWithPathInfo>(@"{"));
+            Assert.Equal("Custom error message Path: $, Line number: 0, Byte position in line: 1", ex.Message);
+        }
+
     }
 }
